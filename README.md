@@ -1,0 +1,1 @@
+# Desenvolvimento-de-um-Sistema-IoT-para-Controle-Termo-Higrom-trico-e-Monitoramento-Remoto-de-Am-nia-
