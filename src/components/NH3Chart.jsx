@@ -10,7 +10,32 @@ export default function NH3Chart({ labels, data }) {
   if (lastVal > 25) { lineColor = '#ef4444'; bgColor = 'rgba(239, 68, 68, 0.2)'; } 
   else if (lastVal >= 20) { lineColor = '#facc15'; bgColor = 'rgba(250, 204, 21, 0.2)'; }
 
-  const chartData = { labels, datasets: [{ fill: true, label: 'Concentração NH₃ (ppm)', data, borderColor: lineColor, backgroundColor: bgColor, borderWidth: 2, tension: 0.4, pointRadius: 3 }] };
-  const options = { responsive: true, scales: { y: { beginAtZero: true, suggestedMax: 35, grid: { color: '#333' }, ticks: { color: '#aaa' } }, x: { grid: { color: '#333' }, ticks: { color: '#aaa' } } }, plugins: { legend: { display: false } } };
+  // Se não houver dados, array vazio para não bugar o chart
+  const hasData = data.length > 0;
+
+  const chartData = { 
+    labels: hasData ? labels : ['--','--','--','--','--'], 
+    datasets: [{ 
+      fill: true, 
+      label: 'Concentração NH₃ (ppm)', 
+      data: hasData ? data : [0,0,0,0,0], 
+      borderColor: hasData ? lineColor : '#555', 
+      backgroundColor: hasData ? bgColor : 'transparent', 
+      borderWidth: 2, 
+      tension: 0.4, 
+      pointRadius: hasData ? 3 : 0 
+    }] 
+  };
+  
+  const options = { 
+    responsive: true, 
+    scales: { 
+      y: { beginAtZero: true, suggestedMax: 35, grid: { color: '#333' }, ticks: { color: '#aaa' } }, 
+      x: { grid: { color: '#333' }, ticks: { color: '#aaa' } } 
+    }, 
+    plugins: { legend: { display: false } },
+    animation: false
+  };
+  
   return <Line data={chartData} options={options} />;
 }
