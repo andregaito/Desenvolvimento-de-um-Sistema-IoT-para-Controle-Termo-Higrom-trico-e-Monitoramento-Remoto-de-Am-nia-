@@ -1,9 +1,4 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@layer components {
-  .card {
-    @apply bg-[#1e1e1e] rounded-xl p-4 mb-4 border border-[#333];
-  }
-}
+@layer components { .card { @apply bg-[#1e1e1e] rounded-xl p-4 mb-4 border border-[#333]; } }

@@ -15,24 +15,28 @@ export default function App() {
   const [labelsTempo, setLabelsTempo] = useState([]);
   const [sensorData, setSensorData] = useState({
     nh3: 0,
-    nos: Array(5).fill({ temp: 0, umid: 0, press: 0 })
+    nos: Array(10).fill({ temp: 0, umid: 0, press: 0 })
   });
 
-  // Simulação de recebimento de dados da API da Orange Pi
+  // Simulação de recebimento de dados da API da Orange Pi (Agora com 10 sensores)
   useEffect(() => {
     const interval = setInterval(() => {
-      const novoNH3 = 14 + Math.random() * 14; // Varia de 14 a 28
-      const novosNos = [
-        { temp: 22.5 + Math.random(), umid: 55.2 + Math.random(), press: 1013 },
-        { temp: 23.1 + Math.random(), umid: 54.8 + Math.random(), press: 1013 },
-        { temp: 24.2 + Math.random(), umid: 56.1 + Math.random(), press: 1012.8 + Math.random() }, // Centro
-        { temp: 28.8 + Math.random(), umid: 70.5 + Math.random(), press: 1013 },
-        { temp: 21.3 + Math.random(), umid: 45.2 + Math.random(), press: 1013 }
-      ];
+      const novoNH3 = 14 + Math.random() * 14; 
+      
+      // Gerando dados para os 10 sensores distribuídos
+      const novosNos = Array(10).fill(0).map((_, i) => {
+        // Criando uma leve variação térmica de ponta a ponta da sala
+        const baseTemp = 22.5 + (i * 0.25); 
+        const baseUmid = 56.0 - (i * 0.4);
+        return {
+          temp: baseTemp + (Math.random() * 1.5 - 0.75),
+          umid: baseUmid + (Math.random() * 3 - 1.5),
+          press: 1012.5 + (Math.random() * 1)
+        };
+      });
 
       setSensorData({ nh3: novoNH3, nos: novosNos });
 
-      // Atualiza histórico do gráfico
       const agora = new Date();
       const horaStr = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}:${String(agora.getSeconds()).padStart(2, '0')}`;
       
@@ -48,7 +52,7 @@ export default function App() {
     <div className="p-4 sm:p-6 max-w-md mx-auto relative min-h-screen">
       <header className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">ClimaTech Monitor</h1>
-        <span className="text-xs bg-green-600 text-white px-3 py-1 rounded-full font-semibold tracking-wider">SALA 1</span>
+        <span className="text-xs bg-blue-600 text-white px-3 py-1 rounded-full font-semibold tracking-wider">SALA 2</span>
       </header>
 
       {/* Cartão de Amônia */}
