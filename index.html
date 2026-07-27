@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClimaTech Monitor - Sala 1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #121212; color: #ffffff; font-family: 'Inter', sans-serif; }
+        .card { background-color: #1e1e1e; border-radius: 12px; padding: 16px; margin-bottom: 16px; border: 1px solid #333; }
+        
+        /* Simulação do mapa da sala baseado na planta */
+        .room-map { 
+            position: relative; 
+            width: 100%; 
+            max-width: 340px; 
+            height: 450px; 
+            /* Gradiente simulando o mapa de calor da foto */
+            background: linear-gradient(135deg, rgba(74,222,128,0.3) 0%, rgba(59,130,246,0.3) 50%, rgba(239,68,68,0.3) 100%);
+            border: 2px solid #555; 
+            border-radius: 8px; 
+            margin: 0 auto; 
+            overflow: hidden;
+        }
+        
+        .sensor-node { 
+            position: absolute; 
+            background: rgba(0,0,0,0.85); 
+            padding: 6px 10px; 
+            border-radius: 8px; 
+            font-size: 13px; 
+            text-align: center; 
+            border: 1px solid #555;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            backdrop-filter: blur(4px);
+        }
+        
+        /* Posições dos 5 nós na Sala 1 */
+        .node-tl { top: 15px; left: 15px; }
+        .node-tr { top: 15px; right: 15px; }
+        .node-bl { bottom: 15px; left: 15px; }
+        .node-br { bottom: 15px; right: 15px; }
+        .node-center { 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            border-color: #4ade80; 
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6 max-w-md mx-auto">
+    <header class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">ClimaTech Monitor</h1>
+        <span class="text-xs bg-green-600 text-white px-3 py-1 rounded-full font-semibold tracking-wider">SALA 1</span>
+    </header>
+
+    <!-- Monitor de Amônia (NH3 YYS) - Nó Central -->
+    <div class="card text-center relative overflow-hidden">
+        <h2 class="text-gray-400 font-medium tracking-wide mb-2">Nível de Amônia (NH₃)</h2>
+        <!-- O valor será atualizado via JavaScript -->
+        <div class="text-6xl font-bold my-6 transition-colors duration-300" id="nh3-value">--</div>
+        <div class="text-sm font-medium bg-black/40 py-2 rounded-lg" id="nh3-status">
+            Aguardando dados...
+        </div>
+    </div>
+
+    <!-- Mapa de Calor e Sensores AHT20 + BMP280 -->
+    <div class="card">
+        <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-3">
+            <h2 class="font-bold text-white tracking-wide">DISTRIBUIÇÃO TÉRMICA</h2>
+            <div class="flex gap-2">
+                <span class="text-[10px] bg-gray-700 px-2 py-1 rounded">TEMP</span>
+                <span class="text-[10px] bg-gray-700 px-2 py-1 rounded">UMID</span>
+            </div>
+        </div>
+        
+        <div class="room-map">
+            <!-- Nó 1: Canto Superior Esquerdo -->
+            <div class="sensor-node node-tl">
+                <div id="t1" class="font-bold">-- °C</div>
+                <div id="h1" class="text-blue-300 text-xs">-- %</div>
+            </div>
+            
+            <!-- Nó 2: Canto Superior Direito -->
+            <div class="sensor-node node-tr">
+                <div id="t2" class="font-bold">-- °C</div>
+                <div id="h2" class="text-blue-300 text-xs">-- %</div>
+            </div>
+            
+            <!-- Nó 3: Centro (Com Pressão do BMP280 e status da Amônia) -->
+            <div class="sensor-node node-center">
+                <div class="text-[10px] text-green-400 font-bold mb-1 tracking-widest">CENTRO / NH₃</div>
+                <div id="t3" class="font-bold text-lg">-- °C</div>
+                <div id="h3" class="text-blue-300">-- %</div>
+                <div id="p3" class="text-yellow-400 text-xs mt-1 border-t border-gray-600 pt-1">-- hPa</div>
+            </div>
+            
+            <!-- Nó 4: Canto Inferior Esquerdo -->
+            <div class="sensor-node node-bl">
+                <div id="t4" class="font-bold">-- °C</div>
+                <div id="h4" class="text-blue-300 text-xs">-- %</div>
+            </div>
+            
+            <!-- Nó 5: Canto Inferior Direito -->
+            <div class="sensor-node node-br">
+                <div id="t5" class="font-bold">-- °C</div>
+                <div id="h5" class="text-blue-300 text-xs">-- %</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Função para formatar os dados de ponto decimal para vírgula
+        // Isso garante que os dados sejam exibidos corretamente na interface
+        // e mantenham compatibilidade visual caso sejam exportados futuramente.
+        function formatarNumeroBR(num, casasDecimais = 1) {
+            return num.toFixed(casasDecimais).replace('.', ',');
+        }
+
+        function atualizarDashboard(dados) {
+            const nh3 = dados.nh3;
+            const nh3El = document.getElementById('nh3-value');
+            const nh3StatusEl = document.getElementById('nh3-status');
+            
+            nh3El.innerText = formatarNumeroBR(nh3, 0) + " ppm";
+            
+            // Lógica de Segurança para Amônia
+            if (nh3 < 20) {
+                nh3El.className = "text-6xl font-bold my-6 transition-colors duration-300 text-green-400";
+                nh3StatusEl.innerHTML = 'Status: <span class="text-green-400 font-bold">SEGURO (<20 ppm)</span>';
+            } else if (nh3 >= 20 && nh3 <= 25) {
+                nh3El.className = "text-6xl font-bold my-6 transition-colors duration-300 text-yellow-400";
+                nh3StatusEl.innerHTML = 'Status: <span class="text-yellow-400 font-bold">AVISO (20-25 ppm)</span>';
+            } else {
+                nh3El.className = "text-6xl font-bold my-6 transition-colors duration-300 text-red-500 animate-pulse";
+                nh3StatusEl.innerHTML = 'Status: <span class="text-red-500 font-bold">ALERTA (>25 ppm)</span>';
+            }
+
+            // Atualiza Nós da Sala (1 a 5)
+            // Utilizando formatarNumeroBR() para garantir a exibição com vírgula (ex: 22,3 °C)
+            for (let i = 0; i < 5; i++) {
+                document.getElementById(`t${i+1}`).innerText = formatarNumeroBR(dados.nos[i].temp) + " °C";
+                document.getElementById(`h${i+1}`).innerText = formatarNumeroBR(dados.nos[i].umid) + " %";
+            }
+            // Atualiza a pressão atmosférica no centro (BMP280)
+            document.getElementById('p3').innerText = formatarNumeroBR(dados.nos[2].press, 1) + " hPa";
+        }
+
+        // SIMULAÇÃO: Este bloco imita o recebimento dos dados da sua API no Orange Pi Zero 3.
+        // No futuro, você substituirá o setInterval por um fetch() buscando do IP do Orange Pi.
+        setInterval(() => {
+            const dadosSimulados = {
+                nh3: Math.floor(Math.random() * 28), // Varia de 0 a 27 ppm para testar os alertas
+                nos: [
+                    { temp: 22.5 + Math.random(), umid: 55.2 + Math.random(), press: 1013 }, // Canto Sup. Esq.
+                    { temp: 23.1 + Math.random(), umid: 54.8 + Math.random(), press: 1013 }, // Canto Sup. Dir.
+                    { temp: 24.2 + Math.random(), umid: 56.1 + Math.random(), press: 1012.8 + Math.random() }, // Centro
+                    { temp: 24.8 + Math.random(), umid: 58.5 + Math.random(), press: 1013 }, // Canto Inf. Esq.
+                    { temp: 25.3 + Math.random(), umid: 59.2 + Math.random(), press: 1013 }  // Canto Inf. Dir.
+                ]
+            };
+            atualizarDashboard(dadosSimulados);
+        }, 2000); // Atualiza a cada 2 segundos
+    </script>
+</body>
+</html>
