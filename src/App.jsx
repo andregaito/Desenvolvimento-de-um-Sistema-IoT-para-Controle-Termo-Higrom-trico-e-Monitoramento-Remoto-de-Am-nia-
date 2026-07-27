@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import Gauge from './components/Gauge';
 import Heatmap from './components/Heatmap';
 import NH3Chart from './components/NH3Chart';
@@ -45,11 +46,13 @@ export default function App() {
   }, []);
 
   return (
-    <div className="p-4 sm:p-6 max-w-md mx-auto relative min-h-screen">
-      <header className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">ClimaTech Monitor</h1>
-        <span className="text-xs bg-green-600 text-white px-3 py-1 rounded-full font-semibold tracking-wider">SALA 1</span>
-      </header>
+    <>
+      <Analytics />
+      <div className="p-4 sm:p-6 max-w-md mx-auto relative min-h-screen">
+        <header className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">ClimaTech Monitor</h1>
+          <span className="text-xs bg-green-600 text-white px-3 py-1 rounded-full font-semibold tracking-wider">SALA 1</span>
+        </header>
 
       {/* Cartão de Amônia */}
       <div className="card relative">
@@ -112,6 +115,7 @@ export default function App() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
